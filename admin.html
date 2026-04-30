@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Studio — لوحة التحكم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root{
+            --primary:#e63946; --primary-gradient:linear-gradient(135deg,#e63946,#c1121f);
+            --bg:#0a0a0a; --card:#141414; --elevated:#1e1e1e; --input:#1a1a1a;
+            --border:rgba(255,255,255,0.07); --border-active:rgba(230,57,70,0.4);
+            --text:#fff; --text2:#a0a0a0; --text3:#505050;
+            --green:#2ecc71; --yellow:#f1c40f;
+            --r:14px; --rf:999px;
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;}
+        button{border:none;cursor:pointer;font-family:inherit;}
+
+        /* ── LOCK SCREEN ── */
+        #lockScreen{
+            position:fixed;inset:0;background:var(--bg);
+            display:flex;align-items:center;justify-content:center;z-index:999;
+        }
+        .lock-box{
+            background:var(--card);border:1px solid var(--border);
+            border-radius:20px;padding:32px 24px;width:90%;max-width:360px;text-align:center;
+        }
+        .lock-icon{font-size:2.5rem;color:var(--primary);margin-bottom:16px;}
+        .lock-box h2{font-size:1.1rem;font-weight:800;margin-bottom:4px;}
+        .lock-box p{font-size:.8rem;color:var(--text2);margin-bottom:20px;}
+        .lock-input{
+            background:var(--input);border:1.5px solid var(--border);border-radius:var(--r);
+            padding:13px 16px;width:100%;color:var(--text);font-size:1rem;
+            font-family:'Cairo',sans-serif;outline:none;text-align:center;letter-spacing:4px;
+            margin-bottom:12px;transition:border-color .2s;
+        }
+        .lock-input:focus{border-color:var(--border-active);}
+        .lock-btn{
+            background:var(--primary-gradient);color:white;padding:13px;
+            border-radius:var(--r);width:100%;font-weight:800;font-size:.95rem;
+            font-family:'Cairo',sans-serif;
+        }
+        .lock-err{color:var(--primary);font-size:.8rem;margin-top:8px;display:none;}
+
+        /* ── LAYOUT ── */
+        #adminPanel{display:none;}
+        .topbar{
+            background:var(--card);border-bottom:1px solid var(--border);
+            padding:14px 20px;display:flex;align-items:center;justify-content:space-between;
+            position:sticky;top:0;z-index:50;
+        }
+        .topbar-title{font-weight:900;font-size:1rem;display:flex;align-items:center;gap:8px;}
+        .topbar-title i{color:var(--primary);}
+        .logout-link{font-size:.8rem;color:var(--text3);cursor:pointer;font-weight:700;}
+        .logout-link:hover{color:var(--primary);}
+
+        .content{padding:20px;max-width:800px;margin:0 auto;}
+
+        /* ── STATS ── */
+        .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+        .stat-card{
+            background:var(--card);border:1px solid var(--border);
+            border-radius:var(--r);padding:16px;text-align:center;
+        }
+        .stat-card i{color:var(--primary);font-size:1.3rem;margin-bottom:8px;display:block;}
+        .stat-num{font-size:1.4rem;font-weight:900;}
+        .stat-lbl{font-size:.72rem;color:var(--text2);margin-top:2px;}
+
+        /* ── SECTION TITLE ── */
+        .section-title{
+            font-size:.95rem;font-weight:800;margin-bottom:14px;
+            display:flex;align-items:center;gap:8px;padding-bottom:10px;
+            border-bottom:1px solid var(--border);
+        }
+        .section-title i{color:var(--primary);}
+
+        /* ── PANEL CARD ── */
+        .panel{
+            background:var(--card);border:1px solid var(--border);
+            border-radius:18px;padding:20px;margin-bottom:20px;
+        }
+
+        /* ── INPUTS ── */
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+        .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;}
+        .inp{
+            background:var(--input);border:1.5px solid var(--border);
+            border-radius:var(--r);padding:11px 14px;
+            color:var(--text);font-size:.88rem;font-family:'Cairo',sans-serif;
+            outline:none;width:100%;transition:border-color .2s;
+        }
+        .inp:focus{border-color:var(--border-active);}
+        .inp::placeholder{color:var(--text3);}
+        label.lbl{font-size:.76rem;color:var(--text2);margin-bottom:4px;display:block;}
+
+        /* ── BUTTONS ── */
+        .btn-primary{
+            background:var(--primary-gradient);color:white;padding:11px 20px;
+            border-radius:var(--r);font-weight:800;font-size:.88rem;
+            font-family:'Cairo',sans-serif;transition:opacity .2s;
+            display:inline-flex;align-items:center;gap:6px;
+        }
+        .btn-primary:hover{opacity:.85;}
+        .btn-green{
+            background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);
+            color:var(--green);padding:11px 20px;border-radius:var(--r);
+            font-weight:800;font-size:.88rem;font-family:'Cairo',sans-serif;
+            transition:all .2s;display:inline-flex;align-items:center;gap:6px;
+        }
+        .btn-green:hover{background:rgba(46,204,113,.2);}
+
+        /* ── USER RESULT ── */
+        .user-result{
+            background:var(--elevated);border:1px solid var(--border);
+            border-radius:var(--r);padding:14px 16px;margin-top:12px;
+            display:none;
+        }
+        .user-result.show{display:block;}
+        .user-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+        .user-name-big{font-size:1rem;font-weight:800;}
+        .user-email-sm{font-size:.76rem;color:var(--text2);}
+        .wallet-big{font-size:1.5rem;font-weight:900;color:var(--primary);}
+
+        /* ── ORDERS TABLE ── */
+        .orders-table{width:100%;border-collapse:collapse;font-size:.82rem;}
+        .orders-table th{
+            background:var(--elevated);padding:10px 12px;
+            text-align:right;font-weight:700;color:var(--text2);
+            border-bottom:1px solid var(--border);
+        }
+        .orders-table td{
+            padding:10px 12px;border-bottom:1px solid var(--border);
+            vertical-align:middle;
+        }
+        .orders-table tr:last-child td{border-bottom:none;}
+        .orders-table tr:hover td{background:rgba(255,255,255,.02);}
+
+        /* Status badges */
+        .badge{padding:3px 10px;border-radius:var(--rf);font-size:.68rem;font-weight:800;}
+        .badge-ok  {background:rgba(46,204,113,.12);color:var(--green);border:1px solid rgba(46,204,113,.2);}
+        .badge-pend{background:rgba(241,196,15,.12);color:var(--yellow);border:1px solid rgba(241,196,15,.2);}
+        .badge-fail{background:rgba(230,57,70,.12);color:var(--primary);border:1px solid rgba(230,57,70,.2);}
+
+        /* ── PRODUCT FORM ── */
+        .product-row{
+            background:var(--elevated);border:1px solid var(--border);
+            border-radius:var(--r);padding:14px;margin-bottom:10px;
+            display:flex;align-items:center;gap:12px;
+        }
+        .product-icon-preview{
+            width:40px;height:40px;border-radius:10px;background:var(--card);
+            display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+            flex-shrink:0;
+        }
+        .product-info{flex:1;}
+        .product-name{font-weight:700;font-size:.88rem;}
+        .product-price{font-size:.76rem;color:var(--primary);font-weight:700;}
+        .product-cat{font-size:.7rem;color:var(--text2);}
+        .del-btn{
+            background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.15);
+            color:var(--primary);width:32px;height:32px;border-radius:8px;
+            display:flex;align-items:center;justify-content:center;font-size:.8rem;
+            transition:all .2s;flex-shrink:0;
+        }
+        .del-btn:hover{background:rgba(230,57,70,.2);}
+
+        /* ── TOAST ── */
+        .toast{
+            position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+            background:#1e1e1e;border:1px solid rgba(255,255,255,.1);
+            color:#fff;padding:10px 22px;border-radius:var(--rf);
+            font-size:.85rem;font-weight:700;z-index:9999;
+            box-shadow:0 4px 20px rgba(0,0,0,.5);white-space:nowrap;
+            font-family:'Cairo',sans-serif;display:none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen">
+    <div class="lock-box">
+        <div class="lock-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h2>لوحة تحكم المدير</h2>
+        <p>أدخل كلمة مرور المدير للدخول</p>
+        <input type="password" class="lock-input" id="adminPass"
+            placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPass()">
+        <button class="lock-btn" onclick="checkPass()">
+            <i class="fa-solid fa-unlock"></i> دخول
+        </button>
+        <div class="lock-err" id="lockErr">كلمة المرور غير صحيحة</div>
+    </div>
+</div>
+
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel">
+
+    <div class="topbar">
+        <div class="topbar-title">
+            <i class="fa-solid fa-chart-line"></i>
+            لوحة تحكم Simple Studio
+        </div>
+        <span class="logout-link" onclick="adminLogout()">
+            <i class="fa-solid fa-right-from-bracket"></i> خروج
+        </span>
+    </div>
+
+    <div class="content">
+
+        <!-- STATS -->
+        <div class="stats-row" id="statsRow">
+            <div class="stat-card">
+                <i class="fa-solid fa-users"></i>
+                <div class="stat-num" id="statUsers">--</div>
+                <div class="stat-lbl">المستخدمين</div>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-bag-shopping"></i>
+                <div class="stat-num" id="statOrders">--</div>
+                <div class="stat-lbl">الطلبات</div>
+            </div>
+            <div class="stat-card">
+                <i class="fa-solid fa-box"></i>
+                <div class="stat-num" id="statProducts">--</div>
+                <div class="stat-lbl">المنتجات</div>
+            </div>
+        </div>
+
+
+        <!-- ══════════════════════
+             شحن المحفظة
+        ══════════════════════ -->
+        <div class="panel">
+            <div class="section-title">
+                <i class="fa-solid fa-wallet"></i>
+                شحن محفظة عميل
+            </div>
+
+            <div class="form-row">
+                <div>
+                    <label class="lbl">البريد الإلكتروني للعميل</label>
+                    <input type="email" class="inp" id="searchEmail" placeholder="example@email.com">
+                </div>
+                <div style="display:flex;align-items:flex-end;">
+                    <button class="btn-primary" onclick="searchUser()" style="width:100%;">
+                        <i class="fa-solid fa-magnifying-glass"></i> بحث
+                    </button>
+                </div>
+            </div>
+
+            <!-- نتيجة البحث -->
+            <div class="user-result" id="userResult">
+                <div class="user-row">
+                    <div>
+                        <div class="user-name-big" id="foundName">--</div>
+                        <div class="user-email-sm" id="foundEmail">--</div>
+                    </div>
+                    <div style="text-align:left;">
+                        <div style="font-size:.72rem;color:var(--text2);">الرصيد الحالي</div>
+                        <div class="wallet-big">$<span id="foundWallet">0.00</span></div>
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-top:12px;">
+                    <div>
+                        <label class="lbl">المبلغ المراد إضافته ($)</label>
+                        <input type="number" class="inp" id="addAmount" placeholder="0.00" min="0.01" step="0.01">
+                    </div>
+                    <div>
+                        <label class="lbl">ملاحظة (اختياري)</label>
+                        <input type="text" class="inp" id="addNote" placeholder="مثلاً: شحن عبر بنكك">
+                    </div>
+                </div>
+                <button class="btn-green" onclick="addWallet()">
+                    <i class="fa-solid fa-plus-circle"></i> شحن المحفظة
+                </button>
+            </div>
+        </div>
+
+
+        <!-- ══════════════════════
+             إضافة منتج
+        ══════════════════════ -->
+        <div class="panel">
+            <div class="section-title">
+                <i class="fa-solid fa-box-open"></i>
+                إضافة منتج جديد
+            </div>
+
+            <div class="form-row">
+                <div>
+                    <label class="lbl">اسم المنتج</label>
+                    <input type="text" class="inp" id="pName" placeholder="Free Fire 310 Diamonds">
+                </div>
+                <div>
+                    <label class="lbl">السعر ($)</label>
+                    <input type="number" class="inp" id="pPrice" placeholder="3.00" min="0" step="0.01">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div>
+                    <label class="lbl">الفئة</label>
+                    <select class="inp" id="pCategory">
+                        <option value="gaming">🎮 Gaming</option>
+                        <option value="starlink">📡 Starlink</option>
+                        <option value="tiktok">🎵 TikTok</option>
+                        <option value="subs">📺 Subscriptions</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="lbl">الأيقونة (emoji)</label>
+                    <input type="text" class="inp" id="pIcon" placeholder="💎" maxlength="4">
+                </div>
+            </div>
+
+            <div>
+                <label class="lbl">وصف قصير</label>
+                <input type="text" class="inp" id="pDesc" placeholder="شحن فوري — Free Fire" style="margin-bottom:12px;">
+            </div>
+
+            <button class="btn-primary" onclick="addProduct()">
+                <i class="fa-solid fa-plus"></i> إضافة المنتج
+            </button>
+        </div>
+
+
+        <!-- ══════════════════════
+             قائمة المنتجات
+        ══════════════════════ -->
+        <div class="panel">
+            <div class="section-title">
+                <i class="fa-solid fa-list"></i>
+                المنتجات الحالية
+            </div>
+            <div id="productsList">
+                <div style="text-align:center;padding:20px;color:var(--text3);">
+                    <i class="fa-solid fa-spinner fa-spin"></i> جارٍ التحميل...
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ══════════════════════
+             آخر الطلبات
+        ══════════════════════ -->
+        <div class="panel">
+            <div class="section-title">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                آخر الطلبات
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>العميل</th>
+                            <th>المنتج</th>
+                            <th>المبلغ</th>
+                            <th>الحالة</th>
+                            <th>التاريخ</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersBody">
+                        <tr>
+                            <td colspan="6" style="text-align:center;color:var(--text3);padding:20px;">
+                                <i class="fa-solid fa-spinner fa-spin"></i> جارٍ التحميل...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div><!-- end content -->
+</div><!-- end adminPanel -->
+
+<div class="toast" id="toast"></div>
+
+
+<script type="module">
+import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+    getFirestore,
+    doc, getDoc, updateDoc, increment,
+    collection, addDoc, getDocs, deleteDoc,
+    query, orderBy, limit, where, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey:            "AIzaSyC2OC1cAlWwY2CJ80cIGJE8_LFOG5UglCE",
+    authDomain:        "sombl-studio.firebaseapp.com",
+    projectId:         "sombl-studio",
+    storageBucket:     "sombl-studio.firebasestorage.app",
+    messagingSenderId: "612989064432",
+    appId:             "1:612989064432:web:4b4f6c6808d9c8272c5e35"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+let foundUserRef = null; // reference لل document المستخدم المبحوث عنه
+
+/* ════════════════════════
+   بحث عن مستخدم بإيميله
+════════════════════════ */
+window.searchUser = async function() {
+    const email = document.getElementById('searchEmail').value.trim().toLowerCase();
+    if (!email) { showToast('أدخل البريد الإلكتروني'); return; }
+
+    showToast('🔍 جارٍ البحث...');
+    try {
+        const q = query(collection(db,'users'), where('email','==',email));
+        const snap = await getDocs(q);
+        if (snap.empty) { showToast('❌ المستخدم غير موجود'); return; }
+
+        const userDoc = snap.docs[0];
+        const data    = userDoc.data();
+        foundUserRef  = userDoc.ref;
+
+        document.getElementById('foundName').textContent   = data.name  || '--';
+        document.getElementById('foundEmail').textContent  = data.email || '--';
+        document.getElementById('foundWallet').textContent = (data.wallet||0).toFixed(2);
+        document.getElementById('userResult').classList.add('show');
+        showToast('✅ تم العثور على العميل');
+    } catch(e) {
+        showToast('خطأ: ' + e.message);
+    }
+};
+
+/* ════════════════════════
+   شحن المحفظة
+════════════════════════ */
+window.addWallet = async function() {
+    if (!foundUserRef) { showToast('ابحث عن مستخدم أولاً'); return; }
+    const amount = parseFloat(document.getElementById('addAmount').value);
+    const note   = document.getElementById('addNote').value.trim();
+    if (!amount || amount <= 0) { showToast('أدخل مبلغاً صحيحاً'); return; }
+
+    try {
+        const snap = await getDoc(foundUserRef);
+        const old  = snap.data().wallet || 0;
+        const newBal = parseFloat((old + amount).toFixed(2));
+
+        await updateDoc(foundUserRef, { wallet: newBal });
+
+        // تسجيل عملية الشحن في collection منفصل
+        await addDoc(collection(db,'wallet_transactions'), {
+            userId:    snap.id,
+            email:     snap.data().email,
+            amount:    amount,
+            type:      'credit',
+            note:      note || 'شحن من المدير',
+            createdAt: serverTimestamp()
+        });
+
+        document.getElementById('foundWallet').textContent = newBal.toFixed(2);
+        document.getElementById('addAmount').value = '';
+        document.getElementById('addNote').value   = '';
+        showToast(`✅ تم إضافة $${amount.toFixed(2)} — الرصيد الجديد: $${newBal.toFixed(2)}`);
+
+        // تحديث الإحصائيات
+        loadStats();
+    } catch(e) {
+        showToast('خطأ: ' + e.message);
+    }
+};
+
+/* ════════════════════════
+   إضافة منتج
+════════════════════════ */
+window.addProduct = async function() {
+    const name  = document.getElementById('pName').value.trim();
+    const price = parseFloat(document.getElementById('pPrice').value);
+    const cat   = document.getElementById('pCategory').value;
+    const icon  = document.getElementById('pIcon').value.trim() || '📦';
+    const desc  = document.getElementById('pDesc').value.trim();
+
+    if (!name || !price) { showToast('أدخل اسم المنتج والسعر'); return; }
+
+    try {
+        await addDoc(collection(db,'products'), {
+            name, price, category: cat, icon, desc,
+            active: true,
+            createdAt: serverTimestamp()
+        });
+        showToast('✅ تم إضافة المنتج بنجاح');
+        ['pName','pPrice','pIcon','pDesc'].forEach(id => document.getElementById(id).value = '');
+        loadProducts();
+        loadStats();
+    } catch(e) {
+        showToast('خطأ: ' + e.message);
+    }
+};
+
+/* ════════════════════════
+   حذف منتج
+════════════════════════ */
+window.deleteProduct = async function(id) {
+    if (!confirm('هل تريد حذف هذا المنتج؟')) return;
+    try {
+        await deleteDoc(doc(db,'products',id));
+        showToast('🗑️ تم حذف المنتج');
+        loadProducts();
+        loadStats();
+    } catch(e) {
+        showToast('خطأ: ' + e.message);
+    }
+};
+
+/* ════════════════════════
+   تغيير حالة الطلب
+════════════════════════ */
+window.changeOrderStatus = async function(orderId, status) {
+    try {
+        await updateDoc(doc(db,'orders',orderId), { status });
+        showToast('✅ تم تحديث حالة الطلب');
+        loadOrders();
+    } catch(e) {
+        showToast('خطأ: ' + e.message);
+    }
+};
+
+/* ════════════════════════
+   تحميل المنتجات
+════════════════════════ */
+async function loadProducts() {
+    const list = document.getElementById('productsList');
+    try {
+        const snap = await getDocs(collection(db,'products'));
+        if (snap.empty) {
+            list.innerHTML = '<p style="color:var(--text3);text-align:center;padding:16px;">لا توجد منتجات بعد</p>';
+            return;
+        }
+        list.innerHTML = snap.docs.map(d => {
+            const p = d.data();
+            return `
+            <div class="product-row">
+                <div class="product-icon-preview">${p.icon||'📦'}</div>
+                <div class="product-info">
+                    <div class="product-name">${p.name}</div>
+                    <div class="product-cat">${p.category}</div>
+                    <div class="product-price">$${(p.price||0).toFixed(2)}</div>
+                </div>
+                <button class="del-btn" onclick="deleteProduct('${d.id}')">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>`;
+        }).join('');
+    } catch(e) {
+        list.innerHTML = '<p style="color:var(--primary);">خطأ في التحميل</p>';
+    }
+}
+
+/* ════════════════════════
+   تحميل الطلبات
+════════════════════════ */
+async function loadOrders() {
+    const tbody = document.getElementById('ordersBody');
+    try {
+        const q = query(collection(db,'orders'), orderBy('createdAt','desc'), limit(20));
+        const snap = await getDocs(q);
+        if (snap.empty) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px;">لا توجد طلبات بعد</td></tr>';
+            return;
+        }
+        tbody.innerHTML = snap.docs.map(d => {
+            const o = d.data();
+            const date = o.createdAt?.toDate().toLocaleDateString('ar') || '--';
+            const badgeClass = o.status === 'completed' ? 'badge-ok' : o.status === 'pending' ? 'badge-pend' : 'badge-fail';
+            const badgeTxt   = o.status === 'completed' ? 'مكتمل' : o.status === 'pending' ? 'قيد التنفيذ' : 'ملغي';
+            return `
+            <tr>
+                <td>${o.userEmail || o.userId?.slice(0,8)+'...' || '--'}</td>
+                <td>${o.productName || '--'}</td>
+                <td style="color:var(--primary);font-weight:700;">$${(o.amount||0).toFixed(2)}</td>
+                <td><span class="badge ${badgeClass}">${badgeTxt}</span></td>
+                <td>${date}</td>
+                <td>
+                    ${o.status === 'pending' ? `
+                    <button onclick="changeOrderStatus('${d.id}','completed')"
+                        style="background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.2);
+                        color:var(--green);padding:4px 10px;border-radius:8px;font-size:.72rem;
+                        font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">
+                        ✓ أكمل
+                    </button>` : '--'}
+                </td>
+            </tr>`;
+        }).join('');
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="6" style="color:var(--primary);padding:16px;">خطأ في التحميل</td></tr>';
+    }
+}
+
+/* ════════════════════════
+   تحميل الإحصائيات
+════════════════════════ */
+async function loadStats() {
+    try {
+        const [u, o, p] = await Promise.all([
+            getDocs(collection(db,'users')),
+            getDocs(collection(db,'orders')),
+            getDocs(collection(db,'products'))
+        ]);
+        document.getElementById('statUsers').textContent    = u.size;
+        document.getElementById('statOrders').textContent   = o.size;
+        document.getElementById('statProducts').textContent = p.size;
+    } catch(e) {}
+}
+
+/* ════════════════════════
+   تحميل أولي
+════════════════════════ */
+window.initAdmin = function() {
+    loadStats();
+    loadProducts();
+    loadOrders();
+};
+
+</script>
+
+<script>
+/* ══ NON-MODULE: Lock Screen + Toast ══ */
+
+/* ─ كلمة مرور المدير — غيّرها! ─ */
+const ADMIN_PASSWORD = 'admin123'; // ← غيّر هذا!
+
+function checkPass() {
+    const val = document.getElementById('adminPass').value;
+    if (val === ADMIN_PASSWORD) {
+        document.getElementById('lockScreen').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        initAdmin();
+    } else {
+        document.getElementById('lockErr').style.display = 'block';
+        document.getElementById('adminPass').value = '';
+        setTimeout(() => document.getElementById('lockErr').style.display = 'none', 2000);
+    }
+}
+
+function adminLogout() {
+    document.getElementById('lockScreen').style.display = 'flex';
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('adminPass').value = '';
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(window._tt);
+    window._tt = setTimeout(() => t.style.display = 'none', 3000);
+}
+
+document.getElementById('adminPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkPass();
+});
+</script>
+
+</body>
+</html>

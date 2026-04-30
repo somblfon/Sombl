@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simple Studio — الدفع</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #e63946;
+            --primary-dark: #c1121f;
+            --primary-gradient: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+            --bg-main: #0a0a0a;
+            --bg-card: #141414;
+            --bg-card-2: #1a1a1a;
+            --bg-elevated: #202020;
+            --bg-input: #1a1a1a;
+            --border: rgba(255,255,255,0.06);
+            --border-active: rgba(230,57,70,0.45);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #505050;
+            --shadow-red: 0 8px 32px rgba(230,57,70,0.3);
+            --shadow-red-sm: 0 4px 16px rgba(230,57,70,0.2);
+            --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+            --radius-sm: 12px;
+            --radius-md: 16px;
+            --radius-lg: 20px;
+            --radius-xl: 24px;
+            --radius-full: 999px;
+        }
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        body { background:var(--bg-main); color:var(--text-primary); font-family:'Cairo',sans-serif; padding-bottom:30px; min-height:100vh; overflow-x:hidden; }
+        a { text-decoration:none; color:inherit; }
+        button { border:none; cursor:pointer; font-family:inherit; background:none; }
+
+        /* ======== HEADER ======== */
+        .page-header {
+            display:flex; align-items:center; gap:12px;
+            padding:14px 16px;
+            position:sticky; top:0;
+            background:rgba(10,10,10,0.94);
+            backdrop-filter:blur(20px);
+            z-index:100;
+            border-bottom:1px solid var(--border);
+        }
+        .back-btn {
+            width:38px; height:38px; border-radius:50%;
+            background:var(--bg-card); border:1px solid var(--border);
+            display:flex; align-items:center; justify-content:center;
+            color:var(--text-primary); font-size:0.9rem;
+            transition:all 0.2s; flex-shrink:0;
+        }
+        .back-btn:hover { border-color:var(--border-active); }
+        .page-title { font-size:1.05rem; font-weight:800; flex:1; text-align:center; }
+        .secure-badge {
+            width:38px; height:38px; border-radius:50%;
+            background:rgba(37,211,102,0.1);
+            border:1px solid rgba(37,211,102,0.25);
+            display:flex; align-items:center; justify-content:center;
+            color:#25d366; font-size:1rem; flex-shrink:0;
+        }
+
+        /* ======== CONTENT ======== */
+        .checkout-content { padding:0 16px; }
+
+        /* ======== ORDER SUMMARY ======== */
+        .order-summary {
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:var(--radius-lg); padding:16px;
+            display:flex; align-items:center; gap:14px;
+            margin:16px 0;
+            animation: slideUp 0.35s ease 0.05s both;
+        }
+        .order-thumb {
+            width:52px; height:52px; border-radius:var(--radius-sm);
+            background:var(--bg-elevated);
+            display:flex; align-items:center; justify-content:center;
+            font-size:1.5rem; flex-shrink:0;
+            border:1px solid var(--border);
+        }
+        .order-info { flex:1; }
+        .order-name { font-weight:700; font-size:0.95rem; margin-bottom:2px; }
+        .order-meta { font-size:0.76rem; color:var(--text-secondary); }
+        .order-price-box { text-align:left; }
+        .order-price { font-weight:900; font-size:1.1rem; color:var(--primary); }
+        .edit-link { color:var(--text-muted); font-size:0.75rem; font-weight:600; display:block; margin-top:3px; }
+
+        /* ======== SECTION LABEL ======== */
+        .section-label {
+            font-size:1rem; font-weight:800;
+            margin:20px 0 12px;
+            display:flex; align-items:center; gap:8px;
+        }
+        .section-label i { color:var(--primary); font-size:0.9rem; }
+
+        /* ======== PAYMENT METHODS ======== */
+        /* Grid: 2 cols, نضع 4 طرق في الصف الأول + 4 في الثاني */
+        .payment-grid {
+            display:grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap:10px;
+            animation: slideUp 0.35s ease 0.1s both;
+        }
+
+        .pay-method {
+            background:var(--bg-card);
+            border:1.5px solid var(--border);
+            border-radius:var(--radius-md);
+            padding:14px 10px;
+            display:flex; flex-direction:column;
+            align-items:center; gap:6px;
+            cursor:pointer;
+            transition:all 0.22s;
+            position:relative;
+            overflow:hidden;
+        }
+        .pay-method:hover { border-color:rgba(255,255,255,0.15); background:var(--bg-card-2); transform:translateY(-1px); }
+        .pay-method.active { border-color:var(--primary); background:rgba(230,57,70,0.06); box-shadow:0 0 0 1px rgba(230,57,70,0.12); }
+
+        /* لوجو التطبيق — دائرة ملونة بحرف أو أيقونة */
+        .pay-logo {
+            width:44px; height:44px; border-radius:12px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:0.75rem; font-weight:900;
+            color:white; letter-spacing:-0.5px;
+            flex-shrink:0;
+            line-height:1;
+            text-align:center;
+        }
+
+        /* ألوان كل تطبيق */
+        .logo-bankak   { background:linear-gradient(135deg,#1e3a8a,#2563eb); }
+        .logo-fawri    { background:linear-gradient(135deg,#065f46,#059669); }
+        .logo-cash     { background:linear-gradient(135deg,#92400e,#d97706); }
+        .logo-mycashi  { background:linear-gradient(135deg,#701a75,#c026d3); }
+        .logo-bravo    { background:linear-gradient(135deg,#7f1d1d,#dc2626); }
+        .logo-yalla    { background:linear-gradient(135deg,#1e1b4b,#4f46e5); }
+        .logo-sona     { background:linear-gradient(135deg,#713f12,#ca8a04); }
+        .logo-whatsapp { background:linear-gradient(135deg,#064e3b,#25d366); font-size:1.1rem !important; }
+
+        .pay-name { font-size:0.78rem; font-weight:800; color:var(--text-primary); text-align:center; }
+        .pay-sub  { font-size:0.65rem; color:var(--text-muted); text-align:center; line-height:1.3; }
+
+        /* تيك الاختيار */
+        .pay-check {
+            position:absolute; top:8px; left:8px;
+            width:18px; height:18px; border-radius:50%;
+            background:var(--primary);
+            display:none; align-items:center; justify-content:center;
+            font-size:0.55rem; color:white;
+        }
+        .pay-method.active .pay-check { display:flex; }
+
+        /* ======== INFO BOX ======== */
+        .info-box {
+            background:rgba(37,211,102,0.06);
+            border:1px solid rgba(37,211,102,0.18);
+            border-radius:var(--radius-md);
+            padding:14px 16px;
+            display:flex; gap:12px; align-items:flex-start;
+            margin-top:4px;
+            animation: slideUp 0.35s ease 0.15s both;
+        }
+        .info-box i { color:#25d366; font-size:1.1rem; margin-top:2px; flex-shrink:0; }
+        .info-box p { font-size:0.82rem; color:var(--text-secondary); line-height:1.6; }
+        .info-box p strong { color:var(--text-primary); }
+
+        /* ======== BILLING INFO ======== */
+        .billing-box {
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:var(--radius-lg); padding:16px;
+            display:flex; flex-direction:column; gap:10px;
+            animation: slideUp 0.35s ease 0.2s both;
+        }
+        .input-group {
+            background:var(--bg-input); border:1.5px solid var(--border);
+            border-radius:var(--radius-sm); padding:12px 14px;
+            display:flex; align-items:center; gap:10px;
+            transition:border-color 0.2s;
+        }
+        .input-group:focus-within { border-color:var(--border-active); }
+        .input-group i { color:var(--text-muted); font-size:0.88rem; flex-shrink:0; }
+        .input-group input, .input-group select {
+            background:transparent; border:none;
+            color:var(--text-primary); width:100%;
+            font-size:0.88rem; font-family:'Cairo',sans-serif; outline:none;
+        }
+        .input-group input::placeholder { color:var(--text-muted); }
+        .input-group select { appearance:none; }
+        .input-group select option { background:var(--bg-card-2); }
+
+        /* ======== PROMO ======== */
+        .promo-row { display:flex; gap:10px; animation: slideUp 0.35s ease 0.22s both; }
+        .promo-row .input-group { flex:1; }
+        .apply-btn {
+            background:var(--primary-gradient); color:white;
+            padding:0 20px; border-radius:var(--radius-sm);
+            font-weight:800; font-size:0.88rem;
+            white-space:nowrap; box-shadow:var(--shadow-red-sm);
+            transition:opacity 0.2s; font-family:'Cairo',sans-serif;
+        }
+        .apply-btn:hover { opacity:0.85; }
+        .promo-success {
+            background:rgba(46,204,113,0.08); border:1px solid rgba(46,204,113,0.2);
+            border-radius:var(--radius-sm); padding:10px 14px;
+            font-size:0.82rem; color:#2ecc71;
+            align-items:center; gap:8px; display:none;
+            margin-top:4px;
+        }
+
+        /* ======== ORDER TOTAL ======== */
+        .total-box {
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:var(--radius-lg); padding:16px;
+            animation: slideUp 0.35s ease 0.25s both;
+        }
+        .total-row {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:7px 0; font-size:0.88rem; color:var(--text-secondary);
+            border-bottom:1px solid var(--border);
+        }
+        .total-row:last-child { border-bottom:none; }
+        .total-row.grand {
+            padding-top:14px; font-size:1.05rem; font-weight:900;
+            color:var(--text-primary);
+        }
+        .total-row.grand span:last-child { color:var(--primary); font-size:1.15rem; }
+        .discount-val { color:#2ecc71; font-weight:700; }
+
+        /* ======== WHATSAPP BUTTON ======== */
+        .whatsapp-btn {
+            background:linear-gradient(135deg, #25d366, #128c7e);
+            color:white; padding:16px;
+            border-radius:var(--radius-lg);
+            font-weight:900; font-size:1.05rem;
+            width:100%;
+            box-shadow:0 8px 32px rgba(37,211,102,0.35);
+            transition:all 0.25s;
+            display:flex; align-items:center; justify-content:center; gap:12px;
+            font-family:'Cairo',sans-serif;
+            margin-top:16px;
+            position:relative; overflow:hidden;
+            animation: slideUp 0.35s ease 0.3s both;
+        }
+        .whatsapp-btn::before {
+            content:'';
+            position:absolute; top:0; left:-100%;
+            width:60%; height:100%;
+            background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);
+            transition:left 0.5s ease;
+        }
+        .whatsapp-btn:hover::before { left:150%; }
+        .whatsapp-btn:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(37,211,102,0.45); }
+        .whatsapp-btn:active { transform:scale(0.98); }
+        .whatsapp-btn i { font-size:1.3rem; }
+
+        /* خطوات الدفع */
+        .steps-box {
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:var(--radius-lg); padding:16px;
+            margin-top:4px;
+            animation: slideUp 0.35s ease 0.35s both;
+        }
+        .steps-title { font-size:0.88rem; font-weight:700; margin-bottom:14px; color:var(--text-secondary); }
+        .step-item {
+            display:flex; gap:12px; align-items:flex-start;
+            margin-bottom:12px;
+        }
+        .step-item:last-child { margin-bottom:0; }
+        .step-num {
+            width:26px; height:26px; border-radius:50%;
+            background:var(--bg-elevated); border:1px solid var(--border);
+            display:flex; align-items:center; justify-content:center;
+            font-size:0.75rem; font-weight:800; color:var(--primary);
+            flex-shrink:0; margin-top:1px;
+        }
+        .step-text { font-size:0.82rem; color:var(--text-secondary); line-height:1.5; }
+        .step-text strong { color:var(--text-primary); }
+
+        /* ======== TRUST ======== */
+        .trust-row {
+            display:flex; justify-content:center; gap:20px;
+            padding:16px 0 24px;
+            animation: slideUp 0.35s ease 0.38s both;
+        }
+        .trust-item { display:flex; flex-direction:column; align-items:center; gap:5px; }
+        .trust-item i { color:var(--text-muted); font-size:1.1rem; }
+        .trust-item span { font-size:0.7rem; color:var(--text-muted); }
+
+        /* ======== ANIMATIONS ======== */
+        @keyframes slideUp { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
+        @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+
+        body.light {
+            --bg-main:#f4f4f6; --bg-card:#fff; --bg-card-2:#f0f0f2;
+            --bg-elevated:#e8e8ec; --bg-input:#f0f0f2;
+            --border:rgba(0,0,0,0.08); --border-active:rgba(230,57,70,0.35);
+            --text-primary:#0f0f0f; --text-secondary:#555; --text-muted:#aaa;
+        }
+        body.light .page-header { background:rgba(244,244,246,0.92); }
+        body { transition:background .3s,color .3s; }
+        .theme-toggle-btn {
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:50%; width:38px; height:38px;
+            display:flex;align-items:center;justify-content:center;
+            color:var(--text-secondary); font-size:1rem; transition:all .2s;
+        }
+        .theme-toggle-btn:hover { border-color:var(--border-active); }
+
+        @media(min-width:768px){
+            body{max-width:480px;margin:0 auto;border-left:1px solid var(--border);border-right:1px solid var(--border)}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="page-header">
+        <button class="back-btn" onclick="history.back()">
+            <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <h1 class="page-title">إتمام الطلب</h1>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <button class="theme-toggle-btn" onclick="toggleTheme()">
+                <i class="fa-solid fa-moon theme-icon"></i>
+            </button>
+            <div class="secure-badge">
+                <i class="fa-brands fa-whatsapp"></i>
+            </div>
+        </div>
+    </header>
+
+    <div class="checkout-content">
+
+        <!-- ORDER SUMMARY -->
+        <div class="order-summary">
+            <div class="order-thumb">💎</div>
+            <div class="order-info">
+                <div class="order-name" id="productName">Free Fire 310 Diamonds</div>
+                <div class="order-meta">تسليم رقمي فوري · الكمية: <span id="qty">1</span></div>
+            </div>
+            <div class="order-price-box">
+                <div class="order-price" id="productPrice">$3.00</div>
+                <a href="#" class="edit-link" onclick="history.back()">← تعديل</a>
+            </div>
+        </div>
+
+
+        <!-- PAYMENT METHOD -->
+        <div class="section-label">
+            <i class="fa-solid fa-wallet"></i>
+            اختر طريقة الدفع
+        </div>
+
+        <div class="payment-grid">
+
+            <!-- بنكك -->
+            <div class="pay-method" onclick="selectPay(this,'بنكك')" data-name="بنكك">
+                <div class="pay-check"><i class="fa-solid fa-check"></i></div>
+                <div class="pay-logo logo-bankak">بنكك</div>
+                <div class="pay-name">بنكك</div>
+                <div class="pay-sub">Bankak · بنك الخرطوم</div>
+            </div>
+
+            <!-- فوري -->
+            <div class="pay-method" onclick="selectPay(this,'فوري')" data-name="فوري">
+                <div class="pay-check"><i class="fa-solid fa-check"></i></div>
+                <div class="pay-logo logo-fawri">فوري</div>
+                <div class="pay-name">فوري</div>
+                <div class="pay-sub">Fawri · تحويل فوري</div>
+            </div>
+
+            <!-- كاش -->
+            <div class="pay-method" onclick="selectPay(this,'كاش')" data-name="كاش">
+                <div class="pay-check"><i class="fa-solid fa-check"></i></div>
+                <div class="pay-logo logo-cash">
+                    <i class="fa-solid fa-money-bill-wave" style="font-size:1.1rem;"></i>
+                </div>
+                <div class="pay-name">كاش</div>
+                <div class="pay-sub">نقداً · Cash</div>
+            </div>
+
+            <!-- ماي كاشي -->
+            <div class="pay-method" onclick="selectPay(this,'ماي كاشي')" data-name="ماي كاشي">
+                <div class="pay-check"><i class="fa-solid fa-check"></i></div>
+                <div class="pay-logo logo-mycashi">MyCashi</div>
+                <div class="pay-name">ماي كاشي</div>
+                <div class="pay-sub">MyCashi · محفظة</div>
+            </div>
+
+            <!-- برافو كاش -->
+            <div class="pay-method" onclick="selectPay(this,'برافو كاش')" data-name="برافو كاش">
+                <div class="pay-check"><i class="fa-solid fa-check"></i></div>
+                <div class="pay-logo logo-bravo">Bravo</div>
+                <div class="pay-name">برافو كاش</div>
+                <div class="pay-sub">Bravo Cash · محفظة</div>
+            </div>
+
+            <!-- يلا باي -->
+            <div class="pay-method" onclick="selectPay(this,'يلا باي')" data-name="يلا باي">
+                <div class="pay-check"><i class="fa-solid fa-check"></i></div>
+                <div class="pay-logo logo-yalla">يلا</div>
+                <div class="pay-name">يلا باي</div>
+                <div class="pay-sub">YallaPay · دفع</div>
+            </div>
+
+            <!-- سونا باي -->
+            <div class="pay-method" onclick="selectPay(this,'سونا باي')" data-name="سونا باي">
+                <div class="pay-check"><i class="fa-solid fa-check"></i></div>
+                <div class="pay-logo logo-sona">سونا</div>
+                <div class="pay-name">سونا باي</div>
+                <div class="pay-sub">SonaPay · محفظة</div>
+            </div>
+
+            <!-- واتساب (كاش يد بيد) -->
+            <div class="pay-method" onclick="selectPay(this,'واتساب')" data-name="واتساب">
+                <div class="pay-check"><i class="fa-solid fa-check"></i></div>
+                <div class="pay-logo logo-whatsapp">
+                    <i class="fa-brands fa-whatsapp"></i>
+                </div>
+                <div class="pay-name">واتساب</div>
+                <div class="pay-sub">تواصل مباشر</div>
+            </div>
+
+        </div>
+
+        <!-- إشعار كيف يتم الدفع -->
+        <div class="info-box" style="margin-top:12px;">
+            <i class="fa-brands fa-whatsapp"></i>
+            <p>
+                بعد تأكيد الطلب سيتم تحويلك إلى <strong>واتساب</strong> لإرسال
+                تفاصيل الطلب وطريقة الدفع المختارة، وبعد التأكيد يتم التسليم <strong>فوراً</strong>.
+            </p>
+        </div>
+
+
+        <!-- BILLING INFO -->
+        <div class="section-label" style="margin-top:22px;">
+            <i class="fa-solid fa-circle-info"></i>
+            بياناتك
+        </div>
+
+        <div class="billing-box">
+            <div class="input-group">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" placeholder="الاسم الكامل" id="custName">
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-phone"></i>
+                <input type="tel" placeholder="رقم الهاتف / واتساب" id="custPhone">
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-gamepad"></i>
+                <input type="text" placeholder="ID اللاعب / الحساب" id="custId">
+            </div>
+        </div>
+
+
+        <!-- PROMO CODE -->
+        <div class="section-label" style="margin-top:22px;">
+            <i class="fa-solid fa-tag"></i>
+            كود الخصم (اختياري)
+        </div>
+
+        <div class="promo-row">
+            <div class="input-group">
+                <i class="fa-solid fa-ticket"></i>
+                <input type="text" placeholder="أدخل الكود..." id="promoInput" style="text-transform:uppercase;">
+            </div>
+            <button class="apply-btn" onclick="applyPromo()">تطبيق</button>
+        </div>
+        <div class="promo-success" id="promoSuccess">
+            <i class="fa-solid fa-circle-check"></i>
+            تم تطبيق الكود! وفّرت <strong id="savedAmt"></strong>
+        </div>
+
+
+        <!-- ORDER TOTAL -->
+        <div class="section-label" style="margin-top:22px;">
+            <i class="fa-solid fa-receipt"></i>
+            ملخص الطلب
+        </div>
+
+        <div class="total-box">
+            <div class="total-row">
+                <span>المنتج</span>
+                <span id="sumProduct">$3.00</span>
+            </div>
+            <div class="total-row">
+                <span>الخصم</span>
+                <span class="discount-val" id="sumDiscount">-$0.00</span>
+            </div>
+            <div class="total-row grand">
+                <span>الإجمالي</span>
+                <span id="sumTotal">$3.00</span>
+            </div>
+        </div>
+
+
+        <!-- WHATSAPP BUTTON -->
+        <button class="whatsapp-btn" onclick="sendToWhatsApp()">
+            <i class="fa-brands fa-whatsapp"></i>
+            تأكيد الطلب عبر واتساب
+        </button>
+
+
+        <!-- خطوات الدفع -->
+        <div class="steps-box">
+            <div class="steps-title">⚡ كيف يتم الطلب؟</div>
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-text">اضغط <strong>تأكيد الطلب</strong> وسيُفتح واتساب تلقائياً مع تفاصيل طلبك</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-text">أرسل الرسالة وانتظر تأكيد <strong>معلومات الدفع</strong> من فريقنا</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-text">بعد استلام الدفع يتم <strong>تسليم الخدمة فوراً</strong> خلال دقائق</div>
+            </div>
+        </div>
+
+
+        <!-- TRUST -->
+        <div class="trust-row">
+            <div class="trust-item">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>دفع آمن</span>
+            </div>
+            <div class="trust-item">
+                <i class="fa-solid fa-bolt"></i>
+                <span>تسليم فوري</span>
+            </div>
+            <div class="trust-item">
+                <i class="fa-solid fa-headset"></i>
+                <span>دعم 24/7</span>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script>
+     
+    </script>
+
+</body>
+</html>

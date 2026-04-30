@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simple Studio — كل الخدمات</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #e63946;
+            --primary-dark: #c1121f;
+            --primary-gradient: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+            --bg-main: #0a0a0a;
+            --bg-card: #141414;
+            --bg-card-2: #1a1a1a;
+            --bg-elevated: #202020;
+            --border: rgba(255,255,255,0.06);
+            --border-active: rgba(230,57,70,0.4);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #505050;
+            --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+            --shadow-red-sm: 0 4px 16px rgba(230,57,70,0.2);
+            --radius-sm: 12px;
+            --radius-md: 16px;
+            --radius-lg: 20px;
+            --radius-xl: 24px;
+            --radius-full: 999px;
+        }
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        body { background:var(--bg-main); color:var(--text-primary); font-family:'Cairo',sans-serif; padding-bottom:100px; min-height:100vh; overflow-x:hidden; }
+        a { text-decoration:none; color:inherit; }
+        button { border:none; cursor:pointer; font-family:inherit; background:none; }
+
+        /* HEADER */
+        .page-header {
+            display:flex; align-items:center; gap:12px;
+            padding:14px 16px;
+            position:sticky; top:0;
+            background:rgba(10,10,10,0.92);
+            backdrop-filter:blur(20px);
+            z-index:100;
+            border-bottom:1px solid var(--border);
+        }
+        .back-btn, .search-icon-btn {
+            width:38px; height:38px; border-radius:50%;
+            background:var(--bg-card); border:1px solid var(--border);
+            display:flex; align-items:center; justify-content:center;
+            color:var(--text-primary); font-size:0.9rem;
+            transition:all 0.2s; flex-shrink:0;
+        }
+        .back-btn:hover, .search-icon-btn:hover { border-color:var(--border-active); }
+        .page-title { font-size:1.05rem; font-weight:800; flex:1; text-align:center; }
+
+        /* SEARCH */
+        .search-wrapper { padding:12px 16px 4px; }
+        .search-bar {
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:var(--radius-lg); padding:11px 16px;
+            display:flex; align-items:center; gap:10px;
+            color:var(--text-muted); transition:border-color 0.2s;
+        }
+        .search-bar:focus-within { border-color:var(--border-active); }
+        .search-bar input { background:transparent; border:none; color:var(--text-primary); width:100%; font-size:0.88rem; font-family:'Cairo',sans-serif; outline:none; }
+        .search-bar input::placeholder { color:var(--text-muted); }
+
+        /* FILTER CHIPS */
+        .filter-scroll { display:flex; overflow-x:auto; gap:8px; padding:12px 16px 8px; scrollbar-width:none; }
+        .filter-scroll::-webkit-scrollbar { display:none; }
+        .filter-chip {
+            background:var(--bg-card); border:1px solid var(--border);
+            padding:7px 16px; border-radius:var(--radius-full);
+            white-space:nowrap; font-weight:700; font-size:0.82rem;
+            color:var(--text-secondary); display:flex; align-items:center; gap:6px;
+            transition:all 0.2s; cursor:pointer; flex-shrink:0;
+        }
+        .filter-chip:hover { border-color:var(--border-active); color:var(--text-primary); }
+        .filter-chip.active { background:var(--primary); color:white; border-color:var(--primary); box-shadow:var(--shadow-red-sm); }
+
+        /* SECTION BLOCK */
+        .services-block { padding:8px 16px 4px; }
+        .block-title {
+            font-size:0.98rem; font-weight:800;
+            display:flex; align-items:center; gap:8px;
+            padding:16px 0 12px;
+            border-bottom:1px solid var(--border);
+            margin-bottom:12px;
+        }
+        .block-title i { color:var(--primary); font-size:0.95rem; }
+
+        /* GRID */
+        .svc-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+        .svc-card {
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:var(--radius-md); padding:15px 13px;
+            display:flex; flex-direction:column; gap:7px;
+            cursor:pointer; transition:all 0.22s ease;
+            position:relative; overflow:hidden;
+        }
+        .svc-card:hover { border-color:var(--border-active); background:var(--bg-card-2); transform:translateY(-2px); box-shadow:var(--shadow-card); }
+
+        .svc-icon {
+            width:40px; height:40px; border-radius:10px;
+            background:var(--bg-elevated);
+            display:flex; align-items:center; justify-content:center;
+            font-size:1.05rem; color:var(--primary);
+        }
+        .svc-icon.green  { background:rgba(46,204,113,0.1);  color:#2ecc71; }
+        .svc-icon.blue   { background:rgba(52,152,219,0.1);  color:#3498db; }
+        .svc-icon.gold   { background:rgba(241,196,15,0.1);  color:#f1c40f; }
+        .svc-icon.pink   { background:rgba(253,121,168,0.1); color:#fd79a8; }
+        .svc-icon.purple { background:rgba(162,155,254,0.1); color:#a29bfe; }
+        .svc-icon.red    { background:rgba(230,57,70,0.1);   color:var(--primary); }
+        .svc-icon.dark   { background:var(--bg-elevated);    color:var(--text-secondary); }
+
+        .svc-name  { font-size:0.86rem; font-weight:700; line-height:1.3; }
+        .svc-desc  { font-size:0.73rem; color:var(--text-secondary); line-height:1.4; }
+        .svc-price { font-size:0.76rem; color:var(--primary); font-weight:700; }
+
+        .order-btn {
+            background:var(--bg-elevated); border:1px solid var(--border);
+            color:var(--text-secondary); padding:7px; border-radius:9px;
+            font-size:0.76rem; font-weight:700; text-align:center;
+            margin-top:2px; transition:all 0.2s;
+            font-family:'Cairo',sans-serif; cursor:pointer; width:100%;
+        }
+        .svc-card:hover .order-btn { background:var(--primary); border-color:var(--primary); color:white; }
+
+        /* EMPTY STATE */
+        .empty-state { text-align:center; padding:40px 20px; color:var(--text-muted); display:none; }
+        .empty-state i { font-size:2.5rem; margin-bottom:12px; display:block; }
+
+        /* BOTTOM NAV */
+        .bottom-nav {
+            position:fixed; bottom:0; left:0; width:100%;
+            background:rgba(12,12,12,0.97); backdrop-filter:blur(20px);
+            padding:10px 10px 20px; display:flex; justify-content:space-around;
+            z-index:1000; border-top:1px solid var(--border);
+            border-top-left-radius:20px; border-top-right-radius:20px;
+        }
+        .nav-btn { display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--text-muted); font-size:0.68rem; font-weight:700; padding:6px 14px; border-radius:var(--radius-sm); transition:all 0.2s; cursor:pointer; }
+        .nav-btn i { font-size:1.25rem; }
+        .nav-btn.active { color:var(--primary); }
+        .nav-btn.active i { filter:drop-shadow(0 0 6px rgba(230,57,70,0.5)); }
+
+        body.light {
+            --bg-main:#f4f4f6; --bg-card:#fff; --bg-card-2:#f0f0f2;
+            --bg-elevated:#e8e8ec; --border:rgba(0,0,0,0.08);
+            --border-active:rgba(230,57,70,0.35);
+            --text-primary:#0f0f0f; --text-secondary:#555; --text-muted:#aaa;
+        }
+        body.light .page-header { background:rgba(244,244,246,0.92); }
+        body.light .bottom-nav  { background:rgba(255,255,255,0.97); }
+        body { transition:background .3s,color .3s; }
+        .theme-toggle-btn {
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:50%; width:38px; height:38px;
+            display:flex;align-items:center;justify-content:center;
+            color:var(--text-secondary); font-size:1rem; transition:all .2s;
+        }
+        .theme-toggle-btn:hover { border-color:var(--border-active); color:var(--text-primary); }
+
+        @keyframes slideUp { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .services-block { animation:slideUp 0.35s ease both; }
+        .services-block:nth-child(1){animation-delay:0.05s}
+        .services-block:nth-child(2){animation-delay:0.1s}
+        .services-block:nth-child(3){animation-delay:0.15s}
+        .services-block:nth-child(4){animation-delay:0.2s}
+
+        @media(min-width:768px){
+            body{max-width:480px;margin:0 auto;border-left:1px solid var(--border);border-right:1px solid var(--border)}
+            .bottom-nav{max-width:480px;left:50%;transform:translateX(-50%)}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="page-header">
+        <button class="back-btn" onclick="history.back()"><i class="fa-solid fa-arrow-right"></i></button>
+        <h1 class="page-title">كل الخدمات</h1>
+        <div style="display:flex;gap:8px;">
+            <button class="theme-toggle-btn" onclick="toggleTheme()"><i class="fa-solid fa-moon theme-icon"></i></button>
+            <button class="search-icon-btn" onclick="toggleSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+    </header>
+
+    <!-- SEARCH -->
+    <div class="search-wrapper" id="searchWrapper" style="display:none;">
+        <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="ابحث عن خدمة..." oninput="filterServices()">
+        </div>
+    </div>
+
+    <!-- FILTER CHIPS -->
+    <div class="filter-scroll">
+        <button class="filter-chip active" data-filter="all"><i class="fa-solid fa-border-all"></i> الكل</button>
+        <button class="filter-chip" data-filter="starlink"><i class="fa-solid fa-satellite-dish"></i> Starlink</button>
+        <button class="filter-chip" data-filter="gaming"><i class="fa-solid fa-gamepad"></i> Gaming</button>
+        <button class="filter-chip" data-filter="tiktok"><i class="fa-brands fa-tiktok"></i> TikTok</button>
+        <button class="filter-chip" data-filter="subs"><i class="fa-solid fa-tv"></i> Subscriptions</button>
+    </div>
+
+    <!-- STARLINK -->
+    <div class="services-block" data-section="starlink" id="starlink">
+        <div class="block-title"><i class="fa-solid fa-satellite-dish"></i> Starlink Services</div>
+        <div class="svc-grid">
+            <div class="svc-card"><div class="svc-icon dark"><i class="fa-solid fa-file-invoice-dollar"></i></div><div class="svc-name">Bill Payment</div><div class="svc-desc">دفع الفواتير فوراً</div><div class="svc-price">من $5</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon blue"><i class="fa-solid fa-rotate"></i></div><div class="svc-name">Subscription Renewal</div><div class="svc-desc">تجديد الاشتراك</div><div class="svc-price">من $10</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon red"><i class="fa-solid fa-shield-halved"></i></div><div class="svc-name">Penalty Removal</div><div class="svc-desc">إزالة الغرامات</div><div class="svc-price">من $8</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon green"><i class="fa-solid fa-circle-plus"></i></div><div class="svc-name">New Registration</div><div class="svc-desc">تسجيل حساب جديد</div><div class="svc-price">من $15</div><button class="order-btn">اطلب الآن</button></div>
+        </div>
+    </div>
+
+    <!-- GAMING -->
+    <div class="services-block" data-section="gaming" id="gaming">
+        <div class="block-title"><i class="fa-solid fa-gamepad"></i> Gaming Top-ups</div>
+        <div class="svc-grid">
+            <div class="svc-card"><div class="svc-icon red"><i class="fa-solid fa-fire"></i></div><div class="svc-name">Free Fire Diamonds</div><div class="svc-desc">شحن فوري</div><div class="svc-price">من $1</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon gold"><i class="fa-solid fa-crosshairs"></i></div><div class="svc-name">PUBG UC</div><div class="svc-desc">Unknown Cash</div><div class="svc-price">من $2</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon blue"><i class="fa-solid fa-khanda"></i></div><div class="svc-name">Mobile Legends</div><div class="svc-desc">Diamonds</div><div class="svc-price">من $1.5</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon dark"><i class="fa-solid fa-bullseye"></i></div><div class="svc-name">Call of Duty</div><div class="svc-desc">CP Points</div><div class="svc-price">من $3</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon purple"><i class="fa-solid fa-wand-sparkles"></i></div><div class="svc-name">Genshin Impact</div><div class="svc-desc">Genesis Crystals</div><div class="svc-price">من $5</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon green"><i class="fa-solid fa-cube"></i></div><div class="svc-name">Roblox</div><div class="svc-desc">Robux</div><div class="svc-price">من $2</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon red"><i class="fa-solid fa-chess-knight"></i></div><div class="svc-name">Valorant</div><div class="svc-desc">VP Points</div><div class="svc-price">من $9.99</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon blue"><i class="fa-solid fa-person-running"></i></div><div class="svc-name">Fortnite</div><div class="svc-desc">V-Bucks</div><div class="svc-price">من $4</div><button class="order-btn">اطلب الآن</button></div>
+        </div>
+    </div>
+
+    <!-- TIKTOK -->
+    <div class="services-block" data-section="tiktok" id="tiktok">
+        <div class="block-title"><i class="fa-brands fa-tiktok"></i> TikTok Services</div>
+        <div class="svc-grid">
+            <div class="svc-card"><div class="svc-icon pink"><i class="fa-solid fa-coins"></i></div><div class="svc-name">TikTok Coins</div><div class="svc-desc">شحن عملات</div><div class="svc-price">من $2</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon purple"><i class="fa-solid fa-users"></i></div><div class="svc-name">TikTok Followers</div><div class="svc-desc">زيادة المتابعين</div><div class="svc-price">من $3</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon red"><i class="fa-solid fa-heart"></i></div><div class="svc-name">TikTok Likes</div><div class="svc-desc">زيادة الإعجابات</div><div class="svc-price">من $2</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon blue"><i class="fa-solid fa-eye"></i></div><div class="svc-name">TikTok Views</div><div class="svc-desc">زيادة المشاهدات</div><div class="svc-price">من $1.5</div><button class="order-btn">اطلب الآن</button></div>
+        </div>
+    </div>
+
+    <!-- SUBSCRIPTIONS -->
+    <div class="services-block" data-section="subs" id="subs">
+        <div class="block-title"><i class="fa-solid fa-tv"></i> App Subscriptions</div>
+        <div class="svc-grid">
+            <div class="svc-card"><div class="svc-icon red"><i class="fa-brands fa-netflix"></i></div><div class="svc-name">Netflix</div><div class="svc-desc">كل الباقات</div><div class="svc-price">من $4.99</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon green"><i class="fa-brands fa-spotify"></i></div><div class="svc-name">Spotify</div><div class="svc-desc">Premium</div><div class="svc-price">من $2.99</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon red"><i class="fa-brands fa-youtube"></i></div><div class="svc-name">YouTube Premium</div><div class="svc-desc">بدون إعلانات</div><div class="svc-price">من $3.99</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon blue"><i class="fa-brands fa-amazon"></i></div><div class="svc-name">Amazon Prime</div><div class="svc-desc">Video & Shopping</div><div class="svc-price">من $5.99</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon purple"><i class="fa-brands fa-discord"></i></div><div class="svc-name">Discord Nitro</div><div class="svc-desc">Classic & Nitro</div><div class="svc-price">من $8.99</div><button class="order-btn">اطلب الآن</button></div>
+            <div class="svc-card"><div class="svc-icon blue"><i class="fa-brands fa-playstation"></i></div><div class="svc-name">PlayStation Plus</div><div class="svc-desc">Essential & Extra</div><div class="svc-price">من $9.99</div><button class="order-btn">اطلب الآن</button></div>
+        </div>
+    </div>
+
+    <div class="empty-state" id="emptyState">
+        <i class="fa-solid fa-box-open"></i>
+        <p>ما في نتائج للبحث هذا</p>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <button class="nav-btn" onclick="window.location='index.html'"><i class="fa-solid fa-house"></i>الرئيسية</button>
+        <button class="nav-btn active"><i class="fa-solid fa-grid-2"></i>الخدمات</button>
+        <button class="nav-btn"><i class="fa-regular fa-clock-rotate-left"></i>طلباتي</button>
+        <button class="nav-btn" onclick="window.location='profile.html'"><i class="fa-regular fa-circle-user"></i>حسابي</button>
+    </nav>
+
+    <script>
+      
+    </script>
+</body>
+</html>

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simple Studio — تسجيل الدخول</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary:#e63946; --primary-dark:#c1121f;
+            --primary-gradient:linear-gradient(135deg,#e63946,#c1121f);
+            --bg-main:#0a0a0a; --bg-card:#141414; --bg-card-2:#1a1a1a;
+            --bg-elevated:#202020; --bg-input:#1a1a1a;
+            --border:rgba(255,255,255,0.06); --border-active:rgba(230,57,70,0.4);
+            --text-primary:#fff; --text-secondary:#a0a0a0; --text-muted:#505050;
+            --shadow-red:0 8px 32px rgba(230,57,70,0.3);
+            --shadow-red-sm:0 4px 16px rgba(230,57,70,0.2);
+            --radius-sm:12px; --radius-md:16px; --radius-lg:20px;
+            --radius-xl:24px; --radius-full:999px;
+        }
+        body.light {
+            --bg-main:#f4f4f6; --bg-card:#fff; --bg-card-2:#f0f0f2;
+            --bg-elevated:#e8e8ec; --bg-input:#f0f0f2;
+            --border:rgba(0,0,0,0.08); --border-active:rgba(230,57,70,0.35);
+            --text-primary:#0f0f0f; --text-secondary:#555; --text-muted:#aaa;
+        }
+
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        html,body{height:100%}
+        body{
+            background:var(--bg-main); color:var(--text-primary);
+            font-family:'Cairo',sans-serif; min-height:100vh;
+            display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            padding:20px; transition:background .3s,color .3s; overflow-x:hidden;
+        }
+        button{border:none;cursor:pointer;font-family:inherit;background:none;}
+
+        /* BG Glow */
+        .bg-glow{
+            position:fixed; top:-120px; left:50%; transform:translateX(-50%);
+            width:400px; height:400px; border-radius:50%;
+            background:radial-gradient(circle,rgba(230,57,70,0.1),transparent 70%);
+            pointer-events:none; z-index:0;
+        }
+
+        /* Theme btn */
+        .theme-btn{
+            position:fixed; top:16px; left:16px;
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:var(--radius-full); padding:7px 14px 7px 10px;
+            display:flex; align-items:center; gap:7px;
+            cursor:pointer; z-index:100; transition:all .2s;
+        }
+        .theme-btn i{font-size:.95rem; color:var(--text-secondary);}
+        .theme-label{font-size:.75rem; font-weight:700; color:var(--text-secondary);}
+
+        /* Card */
+        .auth-card{
+            background:var(--bg-card); border:1px solid var(--border);
+            border-radius:var(--radius-xl); padding:28px 22px;
+            width:100%; max-width:400px; position:relative; z-index:1;
+            animation:slideUp .4s ease;
+            box-shadow:0 20px 60px rgba(0,0,0,.25);
+        }
+
+        /* Logo */
+        .logo-box{text-align:center; margin-bottom:22px;}
+        .logo-icon{
+            width:60px; height:60px; border-radius:16px;
+            background:var(--primary-gradient);
+            display:flex;align-items:center;justify-content:center;
+            font-size:1.6rem; color:white; margin:0 auto 12px;
+            box-shadow:var(--shadow-red-sm);
+        }
+        .logo-title{font-size:1.3rem;font-weight:900;margin-bottom:2px;}
+        .logo-sub{font-size:.78rem;color:var(--text-secondary);}
+
+        /* Tabs */
+        .tabs{
+            display:grid; grid-template-columns:1fr 1fr;
+            background:var(--bg-elevated); border-radius:var(--radius-md);
+            padding:4px; gap:4px; margin-bottom:20px;
+        }
+        .tab-btn{
+            padding:9px; border-radius:var(--radius-sm);
+            font-weight:700; font-size:.85rem;
+            color:var(--text-muted); transition:all .2s;
+            font-family:'Cairo',sans-serif;
+        }
+        .tab-btn.active{
+            background:var(--bg-card); color:var(--text-primary);
+            box-shadow:0 2px 8px rgba(0,0,0,.15);
+        }
+
+        /* Forms */
+        .form-section{display:none;}
+        .form-section.active{display:block; animation:fadeIn .3s ease;}
+
+        /* Input */
+        .input-wrap{margin-bottom:10px;}
+        .input-group{
+            background:var(--bg-input); border:1.5px solid var(--border);
+            border-radius:var(--radius-sm); padding:12px 14px;
+            display:flex; align-items:center; gap:10px;
+            transition:border-color .2s;
+        }
+        .input-group:focus-within{border-color:var(--border-active);}
+        .input-group i{color:var(--text-muted);font-size:.88rem;flex-shrink:0;width:16px;text-align:center;}
+        .input-group input{
+            background:transparent; border:none;
+            color:var(--text-primary); width:100%;
+            font-size:.88rem; font-family:'Cairo',sans-serif; outline:none;
+        }
+        .input-group input::placeholder{color:var(--text-muted);}
+        .input-group.error{border-color:rgba(230,57,70,0.6);}
+
+        .field-err{
+            font-size:.72rem; color:var(--primary);
+            padding:4px 4px 0; display:none;
+        }
+        .field-err.show{display:block;}
+
+        .eye-btn{color:var(--text-muted);cursor:pointer;font-size:.88rem;flex-shrink:0;}
+
+        /* Submit */
+        .submit-btn{
+            background:var(--primary-gradient); color:white;
+            padding:14px; border-radius:var(--radius-sm);
+            font-weight:900; font-size:.95rem; width:100%;
+            box-shadow:var(--shadow-red-sm); transition:all .2s;
+            font-family:'Cairo',sans-serif; margin-top:6px;
+            display:flex;align-items:center;justify-content:center;gap:8px;
+        }
+        .submit-btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-red);}
+        .submit-btn:active{transform:scale(.98);}
+        .submit-btn:disabled{opacity:.65;cursor:not-allowed;transform:none;}
+
+        /* Divider */
+        .divider{
+            display:flex;align-items:center;gap:10px;
+            margin:14px 0; color:var(--text-muted); font-size:.78rem;
+        }
+        .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+        /* Guest */
+        .guest-btn{
+            background:var(--bg-elevated); border:1px solid var(--border);
+            border-radius:var(--radius-sm); padding:11px;
+            display:flex;align-items:center;justify-content:center;gap:8px;
+            font-size:.85rem;font-weight:700;color:var(--text-secondary);
+            width:100%; transition:all .2s; font-family:'Cairo',sans-serif;
+        }
+        .guest-btn:hover{border-color:var(--border-active);color:var(--text-primary);}
+
+        /* Switch */
+        .switch-text{text-align:center;font-size:.82rem;color:var(--text-secondary);margin-top:14px;}
+        .switch-link{color:var(--primary);font-weight:700;cursor:pointer;}
+
+        /* Firebase Error Box */
+        .firebase-err{
+            background:rgba(230,57,70,0.08); border:1px solid rgba(230,57,70,0.25);
+            border-radius:var(--radius-sm); padding:10px 14px;
+            font-size:.82rem; color:var(--primary);
+            display:none; margin-bottom:10px;
+            align-items:center; gap:8px;
+        }
+        .firebase-err.show{display:flex;}
+
+        /* Toast */
+        .toast{
+            position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+            background:#1e1e1e;border:1px solid rgba(255,255,255,.1);
+            color:#fff;padding:10px 22px;border-radius:var(--radius-full);
+            font-size:.85rem;font-weight:700;z-index:9999;
+            box-shadow:0 4px 20px rgba(0,0,0,.5);white-space:nowrap;
+            font-family:'Cairo',sans-serif;display:none;
+        }
+        body.light .toast{background:#fff;color:#111;border-color:rgba(0,0,0,.1);}
+
+        /* Loading Spinner overlay */
+        .loading-overlay{
+            position:fixed;inset:0;background:rgba(0,0,0,.6);
+            backdrop-filter:blur(8px);z-index:500;
+            display:none;align-items:center;justify-content:center;
+        }
+        .loading-overlay.show{display:flex;}
+        .spinner{
+            width:48px;height:48px;border-radius:50%;
+            border:3px solid rgba(255,255,255,.1);
+            border-top-color:var(--primary);
+            animation:spin .8s linear infinite;
+        }
+
+        @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+        @keyframes fadeIn {from{opacity:0}to{opacity:1}}
+        @keyframes spin   {to{transform:rotate(360deg)}}
+
+        @media(min-width:768px){.auth-card{max-width:420px;}}
+    </style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+</div>
+
+<!-- Theme Toggle -->
+<button class="theme-btn" onclick="toggleTheme()">
+    <i class="fa-solid fa-moon theme-icon"></i>
+    <span class="theme-label">داكن</span>
+</button>
+
+<!-- AUTH CARD -->
+<div class="auth-card">
+
+    <!-- Logo -->
+    <div class="logo-box">
+        <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="logo-title">Simple <span style="color:var(--primary)">Studio</span></div>
+        <div class="logo-sub">Your Trusted Digital Partner</div>
+    </div>
+
+    <!-- Firebase Error -->
+    <div class="firebase-err" id="firebaseErr">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="firebaseErrMsg"></span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">
+            <i class="fa-solid fa-right-to-bracket"></i> دخول
+        </button>
+        <button class="tab-btn" id="registerTab" onclick="switchTab('register')">
+            <i class="fa-solid fa-user-plus"></i> تسجيل
+        </button>
+    </div>
+
+
+    <!-- ===== LOGIN ===== -->
+    <div class="form-section active" id="loginForm">
+
+        <div class="input-wrap">
+            <div class="input-group" id="lg-email-wrap">
+                <i class="fa-regular fa-envelope"></i>
+                <input type="email" id="lgEmail" placeholder="البريد الإلكتروني" autocomplete="email">
+            </div>
+            <div class="field-err" id="lgEmailErr">أدخل بريداً إلكترونياً صحيحاً</div>
+        </div>
+
+        <div class="input-wrap">
+            <div class="input-group" id="lg-pass-wrap">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="lgPass" placeholder="كلمة المرور" autocomplete="current-password">
+                <span class="eye-btn" onclick="togglePass('lgPass',this)">
+                    <i class="fa-regular fa-eye"></i>
+                </span>
+            </div>
+            <div class="field-err" id="lgPassErr">كلمة المرور 6 أحرف على الأقل</div>
+        </div>
+
+        <div style="text-align:left;margin-bottom:14px;">
+            <span style="font-size:.78rem;color:var(--primary);cursor:pointer;font-weight:600;"
+                onclick="forgotPassword()">نسيت كلمة المرور؟</span>
+        </div>
+
+        <button class="submit-btn" id="loginBtn" onclick="doLogin()">
+            <i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
+        </button>
+
+        <div class="divider">أو</div>
+
+        <button class="guest-btn" onclick="guestLogin()">
+            <i class="fa-solid fa-user-secret"></i> المتابعة كزائر
+        </button>
+
+        <div class="switch-text">
+            ما عندك حساب؟
+            <span class="switch-link" onclick="switchTab('register')">أنشئ حساباً</span>
+        </div>
+    </div>
+
+
+    <!-- ===== REGISTER ===== -->
+    <div class="form-section" id="registerForm">
+
+        <div class="input-wrap">
+            <div class="input-group" id="rg-name-wrap">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="rgName" placeholder="الاسم الكامل" autocomplete="name">
+            </div>
+            <div class="field-err" id="rgNameErr">الاسم 3 أحرف على الأقل</div>
+        </div>
+
+        <div class="input-wrap">
+            <div class="input-group" id="rg-email-wrap">
+                <i class="fa-regular fa-envelope"></i>
+                <input type="email" id="rgEmail" placeholder="البريد الإلكتروني" autocomplete="email">
+            </div>
+            <div class="field-err" id="rgEmailErr">أدخل بريداً إلكترونياً صحيحاً</div>
+        </div>
+
+        <div class="input-wrap">
+            <div class="input-group" id="rg-phone-wrap">
+                <i class="fa-solid fa-phone"></i>
+                <input type="tel" id="rgPhone" placeholder="رقم الواتساب" autocomplete="tel">
+            </div>
+            <div class="field-err" id="rgPhoneErr">أدخل رقم هاتف صحيح</div>
+        </div>
+
+        <div class="input-wrap">
+            <div class="input-group" id="rg-pass-wrap">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="rgPass" placeholder="كلمة المرور (6 أحرف+)" autocomplete="new-password">
+                <span class="eye-btn" onclick="togglePass('rgPass',this)">
+                    <i class="fa-regular fa-eye"></i>
+                </span>
+            </div>
+            <div class="field-err" id="rgPassErr">6 أحرف على الأقل</div>
+        </div>
+
+        <div class="input-wrap">
+            <div class="input-group" id="rg-pass2-wrap">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="rgPass2" placeholder="تأكيد كلمة المرور" autocomplete="new-password">
+                <span class="eye-btn" onclick="togglePass('rgPass2',this)">
+                    <i class="fa-regular fa-eye"></i>
+                </span>
+            </div>
+            <div class="field-err" id="rgPass2Err">كلمات المرور غير متطابقة</div>
+        </div>
+
+        <label style="display:flex;align-items:flex-start;gap:10px;margin:8px 0 14px;cursor:pointer;">
+            <input type="checkbox" id="termsCheck"
+                style="margin-top:3px;accent-color:var(--primary);width:15px;height:15px;flex-shrink:0;">
+            <span style="font-size:.78rem;color:var(--text-secondary);line-height:1.5;">
+                أوافق على <span style="color:var(--primary);font-weight:700;">الشروط والأحكام</span>
+            </span>
+        </label>
+        <div class="field-err" id="termsErr">يجب الموافقة على الشروط أولاً</div>
+
+        <button class="submit-btn" id="registerBtn" onclick="doRegister()">
+            <i class="fa-solid fa-user-plus"></i> إنشاء الحساب
+        </button>
+
+        <div class="switch-text">
+            عندك حساب؟
+            <span class="switch-link" onclick="switchTab('login')">سجّل دخول</span>
+        </div>
+    </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+
+<!-- ====================================================
+     FIREBASE + LOGIC
+===================================================== -->
+<script type="module">
+
+    /* ── Firebase imports ── */
+    import { initializeApp }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+        getAuth,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        sendPasswordResetEmail,
+        onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import {
+        getFirestore,
+        doc, setDoc, getDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    /* ── Config ── */
+    const firebaseConfig = {
+        apiKey:            "AIzaSyC2OC1cAlWwY2CJ80cIGJE8_LFOG5UglCE",
+        authDomain:        "sombl-studio.firebaseapp.com",
+        projectId:         "sombl-studio",
+        storageBucket:     "sombl-studio.firebasestorage.app",
+        messagingSenderId: "612989064432",
+        appId:             "1:612989064432:web:4b4f6c6808d9c8272c5e35",
+        measurementId:     "G-SRP8EYVQTJ"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    /* ── إذا المستخدم مسجّل بالفعل، روح للرئيسية ── */
+    onAuthStateChanged(auth, user => {
+        if (user) window.location.href = 'index.html';
+    });
+
+    /* ── Helpers ── */
+    function showLoading(v)  { document.getElementById('loadingOverlay').classList.toggle('show', v); }
+    function isEmail(v)      { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+    function isPhone(v)      { return /^[\d\+\-\s]{7,15}$/.test(v); }
+
+    function showFirebaseErr(msg) {
+        const box = document.getElementById('firebaseErr');
+        document.getElementById('firebaseErrMsg').textContent = msg;
+        box.classList.add('show');
+        setTimeout(() => box.classList.remove('show'), 5000);
+    }
+
+    function clearErrors() {
+        document.querySelectorAll('.field-err').forEach(e => e.classList.remove('show'));
+        document.querySelectorAll('.input-group').forEach(g => g.classList.remove('error'));
+        document.getElementById('firebaseErr').classList.remove('show');
+    }
+
+    function markErr(wrapId, errId) {
+        document.getElementById(wrapId).classList.add('error');
+        document.getElementById(errId).classList.add('show');
+    }
+
+    function setBtn(id, loading, label) {
+        const btn = document.getElementById(id);
+        btn.disabled = loading;
+        btn.innerHTML = loading
+            ? '<i class="fa-solid fa-spinner fa-spin"></i> جارٍ...'
+            : label;
+    }
+
+    /* ── تحويل أخطاء Firebase لعربية ── */
+    function friendlyError(code) {
+        const map = {
+            'auth/user-not-found':       'البريد الإلكتروني غير مسجّل',
+            'auth/wrong-password':       'كلمة المرور غير صحيحة',
+            'auth/email-already-in-use': 'هذا البريد مسجّل مسبقاً',
+            'auth/invalid-email':        'صيغة البريد الإلكتروني غير صحيحة',
+            'auth/too-many-requests':    'محاولات كثيرة — انتظر قليلاً ثم حاول',
+            'auth/network-request-failed': 'تحقق من اتصالك بالإنترنت',
+            'auth/invalid-credential':   'البريد أو كلمة المرور غير صحيحة',
+            'auth/weak-password':        'كلمة المرور ضعيفة — استخدم 6 أحرف على الأقل',
+        };
+        return map[code] || 'حدث خطأ، حاول مرة أخرى';
+    }
+
+    /* ══════════════════════════════════
+       LOGIN
+    ══════════════════════════════════ */
+    window.doLogin = async function() {
+        clearErrors();
+        const email = document.getElementById('lgEmail').value.trim();
+        const pass  = document.getElementById('lgPass').value;
+        let ok = true;
+
+        if (!isEmail(email)) { markErr('lg-email-wrap','lgEmailErr'); ok = false; }
+        if (pass.length < 6) { markErr('lg-pass-wrap', 'lgPassErr');  ok = false; }
+        if (!ok) return;
+
+        setBtn('loginBtn', true, '');
+        showLoading(true);
+
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+            // onAuthStateChanged سيتعامل مع التوجيه
+        } catch(e) {
+            showLoading(false);
+            setBtn('loginBtn', false, '<i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول');
+            showFirebaseErr(friendlyError(e.code));
+        }
+    };
+
+    /* ══════════════════════════════════
+       REGISTER
+    ══════════════════════════════════ */
+    window.doRegister = async function() {
+        clearErrors();
+        const name   = document.getElementById('rgName').value.trim();
+        const email  = document.getElementById('rgEmail').value.trim();
+        const phone  = document.getElementById('rgPhone').value.trim();
+        const pass   = document.getElementById('rgPass').value;
+        const pass2  = document.getElementById('rgPass2').value;
+        const terms  = document.getElementById('termsCheck').checked;
+        let ok = true;
+
+        if (name.length  < 3)  { markErr('rg-name-wrap', 'rgNameErr');  ok = false; }
+        if (!isEmail(email))    { markErr('rg-email-wrap','rgEmailErr'); ok = false; }
+        if (!isPhone(phone))    { markErr('rg-phone-wrap','rgPhoneErr'); ok = false; }
+        if (pass.length  < 6)  { markErr('rg-pass-wrap', 'rgPassErr');  ok = false; }
+        if (pass !== pass2)     { markErr('rg-pass2-wrap','rgPass2Err'); ok = false; }
+        if (!terms) {
+            document.getElementById('termsErr').classList.add('show'); ok = false;
+        }
+        if (!ok) return;
+
+        setBtn('registerBtn', true, '');
+        showLoading(true);
+
+        try {
+            /* 1 — إنشاء حساب في Firebase Auth */
+            const cred = await createUserWithEmailAndPassword(auth, email, pass);
+            const uid  = cred.user.uid;
+
+            /* 2 — إنشاء سجل المستخدم في Firestore مع محفظة تبدأ بـ 0 */
+            await setDoc(doc(db, 'users', uid), {
+                name:      name,
+                email:     email,
+                phone:     phone,
+                wallet:    0,          // ← المحفظة تبدأ بـ صفر
+                orders:    0,
+                joinDate:  serverTimestamp(),
+                isGuest:   false
+            });
+
+            // onAuthStateChanged سيوجّه للرئيسية تلقائياً
+        } catch(e) {
+            showLoading(false);
+            setBtn('registerBtn', false, '<i class="fa-solid fa-user-plus"></i> إنشاء الحساب');
+            showFirebaseErr(friendlyError(e.code));
+        }
+    };
+
+    /* ══════════════════════════════════
+       FORGOT PASSWORD
+    ══════════════════════════════════ */
+    window.forgotPassword = async function() {
+        const email = document.getElementById('lgEmail').value.trim();
+        if (!isEmail(email)) {
+            markErr('lg-email-wrap','lgEmailErr');
+            document.getElementById('lgEmailErr').textContent = 'أدخل بريدك أولاً ثم اضغط نسيت كلمة المرور';
+            return;
+        }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            showToast('📧 تم إرسال رابط إعادة التعيين لبريدك');
+        } catch(e) {
+            showFirebaseErr(friendlyError(e.code));
+        }
+    };
+
+    /* ══════════════════════════════════
+       GUEST LOGIN
+    ══════════════════════════════════ */
+    window.guestLogin = function() {
+        // زائر — بدون حساب، نحفظ جلسة محلية فقط
+        localStorage.setItem('ss-guest', 'true');
+        localStorage.setItem('ss-user', JSON.stringify({
+            name: 'زائر', email: '', phone: '',
+            wallet: 0, orders: 0, isGuest: true
+        }));
+        window.location.href = 'index.html';
+    };
+
+    /* ── Enter key ── */
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Enter') return;
+        if (document.getElementById('loginForm').classList.contains('active')) doLogin();
+        else doRegister();
+    });
+
+</script>
+
+<script>
+    /* ══════════ NON-MODULE HELPERS ══════════ */
+
+    /* Theme */
+    const SS_THEME = 'ss-theme';
+    function applyTheme(t) {
+        document.body.classList.toggle('light', t === 'light');
+        document.querySelectorAll('.theme-icon').forEach(i => {
+            i.className = t==='light' ? 'fa-solid fa-sun theme-icon' : 'fa-solid fa-moon theme-icon';
+        });
+        document.querySelectorAll('.theme-label').forEach(l => l.textContent = t==='light' ? 'فاتح' : 'داكن');
+        localStorage.setItem(SS_THEME, t);
+    }
+    function toggleTheme() {
+        applyTheme((localStorage.getItem(SS_THEME)||'dark')==='dark' ? 'light' : 'dark');
+    }
+    applyTheme(localStorage.getItem(SS_THEME) || 'dark');
+
+    /* Tabs */
+    function switchTab(tab) {
+        document.getElementById('loginTab').classList.toggle('active', tab==='login');
+        document.getElementById('registerTab').classList.toggle('active', tab==='register');
+        document.getElementById('loginForm').classList.toggle('active', tab==='login');
+        document.getElementById('registerForm').classList.toggle('active', tab==='register');
+        document.getElementById('firebaseErr').classList.remove('show');
+    }
+
+    /* Eye toggle */
+    function togglePass(id, btn) {
+        const inp = document.getElementById(id);
+        const isText = inp.type === 'text';
+        inp.type = isText ? 'password' : 'text';
+        btn.innerHTML = isText
+            ? '<i class="fa-regular fa-eye"></i>'
+            : '<i class="fa-regular fa-eye-slash"></i>';
+    }
+
+    /* Toast */
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.display = 'block';
+        clearTimeout(window._tt);
+        window._tt = setTimeout(() => t.style.display = 'none', 2800);
+    }
+</script>
+
+</body>
+</html>
